@@ -1,4 +1,5 @@
 const ones = {
+  0: '',
   1: 'one',
   2: 'two',
   3: 'three',
@@ -24,41 +25,61 @@ const firstTen = {
 }
 
 const tens = {
-  20: 'twenty',
-  30: 'thirty',
-  40: 'fourty',
-  50: 'fifty',
-  60: 'sixty',
-  70: 'seventy',
-  80: 'eighty',
-  90: 'ninety'
+  2: 'twenty',
+  3: 'thirty',
+  4: 'forty',
+  5: 'fifty',
+  6: 'sixty',
+  7: 'seventy',
+  8: 'eighty',
+  9: 'ninety'
 }
 
-function toReadable (number) {
+function parseHundred(number) {
+  const firstDigit = number % 10;
+  const secondDigit = Math.floor(number / 10) % 10;
+  const thirdDigit = Math.floor(number / 100);
+  let ret = '';
+
+  switch (secondDigit) {
+    case 0:
+      ret += ones[firstDigit];
+      break;
+    case 1:
+      ret += firstTen[secondDigit * 10 + firstDigit];
+      break;
+    default:
+      ret += tens[secondDigit] + ' ' + ones[firstDigit];
+      break;
+  }
+
+  if (thirdDigit !== 0) ret = `${ones[thirdDigit]} hundred ` + ret;
+
+  return ret;
+}
+
+function toReadable(number) {
   ret = '';
   if (number === 0) return 'zero';
 
-  const oneDigit = number % 10;
-  const twoDigits = number % 100 - oneDigit;
-  if (twoDigits === 0)
+  ret += parseHundred(number % 1000);
+  number = Math.floor(number / 1000);
+
+  if (number !== 0)
   {
-    ret += ones[oneDigit];
+    const thousands = parseHundred(number % 1000);
+    if (thousands) ret = `${thousands} thousand${number % 10 === 1 ? '' : 's'} ${ret}`;
+    number = Math.floor(number / 1000);
   }
-  else
+
+  if (number !== 0)
   {
-    if (twoDigits === 10)
-    {
-      ret += firstTen[twoDigits + oneDigit];
-    }
-    else
-    {
-      ret += `${tens[twoDigits]} ${ones[oneDigit] || ''}`;
-    }
+    const millions = parseHundred(number % 1000);
+    if (millions) ret = `${millions} million${number % 10 === 1 ? '' : 's'} ${ret}`;
+    number = Math.floor(number / 1000);
   }
+
   return ret.trim();
 }
 
 module.exports = toReadable;
-
-console.log(typeof toReadable(3));
-console.log(toReadable(99));
